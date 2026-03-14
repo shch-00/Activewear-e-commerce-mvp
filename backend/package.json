@@ -13,8 +13,9 @@
     "medusa"
   ],
   "scripts": {
-    "build": "medusa build",
+    "build": "medusa build && node scripts/copy-admin-build.js",
     "seed": "medusa exec ./src/scripts/seed.ts",
+    "get-publishable-key": "medusa exec ./src/scripts/get-publishable-key.ts",
     "start": "medusa start",
     "dev": "medusa develop",
     "test:integration:http": "TEST_TYPE=integration:http NODE_OPTIONS=--experimental-vm-modules jest --silent=false --runInBand --forceExit",

@@ -48,14 +48,21 @@ docker compose up -d
 npx create-medusa-app@latest backend --directory-path . --db-url "postgres://postgres:postgres@localhost:5432/medusa-store"
 ```
 
-Запуск backend:
+Перед первым запуском соберите админку (иначе `npm run start` упадёт с ошибкой про index.html). Сборка также копирует админку в `public/admin`, откуда её ищет старт.
+
+Из **корня репозитория**:
 
 ```bash
+cd backend && npm run build
 cd backend && npm run start
 ```
 
+Либо, если ты уже в папке `backend`: `npm run build`, затем `npm run start`.
+
 - API: http://localhost:9000  
 - Admin Panel: http://localhost:9000/app  
+
+В `backend/.env` при необходимости задайте CORS (если не заданы, в конфиге подставятся значения по умолчанию для localhost). Для логина в админку без 401 на localhost в конфиг добавлены `cookieOptions` и `sessionOptions` для разработки. Если после входа GET `/admin/users/me` возвращает 401: (1) после любого изменения `medusa-config.ts` нужна пересборка: `npm run build`, затем `npm run start`; (2) очистите куки для localhost:9000 и войдите снова; (3) в запросе к `/admin/users/me` во вкладке Network проверьте, что в Request Headers есть `Cookie: connect.sid=...`. Пользователя админки создаёт `create-medusa-app`; нового: `npx medusa user -e email -p пароль` (оба флага `-e` и `-p` обязательны).
 
 ### 2. Frontend
 
@@ -68,7 +75,26 @@ npm run dev
 
 Откройте http://localhost:3000  
 
-В `.env` указан `NEXT_PUBLIC_MEDUSA_BACKEND_URL=http://localhost:9000` для запросов к Medusa.
+В `.env` указаны:
+- `NEXT_PUBLIC_MEDUSA_BACKEND_URL=http://localhost:9000` — запросы к Medusa проксируются через Next.js (`/api/store/*` → backend).
+- `NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY` — **нужен для каталога** (Store API без ключа не отдаёт товары). Как получить — ниже.
+
+### Где взять Publishable API Key
+
+В сборке Medusa из `create-medusa-app` в админке **нет** раздела Developer / Publishable API Keys (есть только Settings → Store). Токен получают скриптом в backend:
+
+```bash
+cd backend
+npm run get-publishable-key
+```
+
+Скрипт создаёт ключ «Storefront», привязывает его к Default Sales Channel и **один раз** выводит токен в консоль. Скопируйте его в `frontend/.env`:
+
+```
+NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY=вставьте_токен_из_консоли
+```
+
+После этого перезапустите frontend (`npm run dev` в папке frontend) — каталог на http://localhost:3000/products подтянет товары.
 
 ## Расширение frontend
 
