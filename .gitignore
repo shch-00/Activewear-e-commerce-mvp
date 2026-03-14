@@ -1,0 +1,30 @@
+# Dependencies
+node_modules
+.pnp
+.pnp.js
+
+# Build / Next
+frontend/.next
+frontend/out
+
+# Medusa backend (после create-medusa-app)
+backend/node_modules
+backend/.medusa
+
+# Env
+.env
+.env.local
+.env.*.local
+
+# IDE / OS
+.idea
+.vscode
+*.swp
+.DS_Store
+
+# Logs / debug
+npm-debug.log*
+*.log
+
+# Misc
+*.tsbuildinfo

@@ -1,0 +1,18 @@
+# PostgreSQL для Medusa backend (опционально).
+# Запуск: docker compose up -d
+# DATABASE_URL=postgres://postgres:postgres@localhost:5432/medusa-store
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: medusa-store
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
