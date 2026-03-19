@@ -32,10 +32,11 @@ npx create-medusa-app@latest backend --directory-path .
 - email админа для входа в Admin Panel
 - при необходимости — данные PostgreSQL (или используйте локальный инстанс)
 
-После установки:
+После установки соберите админку и запустите backend:
 
 ```bash
 cd backend
+npm run build
 npm run start
 ```
 
