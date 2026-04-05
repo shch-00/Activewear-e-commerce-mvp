@@ -16,6 +16,11 @@ backend/.medusa
 .env.local
 .env.*.local
 
+# Примеры / шаблоны env — только локально (переменные описаны в README)
+/backend/.env.template
+/backend/.env.test
+/frontend/.env.example
+
 # IDE / OS
 .idea
 .vscode
@@ -28,3 +33,9 @@ npm-debug.log*
 
 # Misc
 *.tsbuildinfo
+
+# Локальные скрипты в корне (не трогать backend/src/scripts)
+/scripts/
+
+# Qwen / локальные настройки IDE
+/.qwen/
