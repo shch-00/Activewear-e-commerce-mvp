@@ -19,8 +19,7 @@
 │   │   ├── lib/       # утилиты (cn и т.д.)
 │   │   └── store/     # Zustand (корзина и др.)
 │   └── components.json
-├── backend-setup/     # Инструкции и .env.example для backend
-├── backend/           # Medusa (создаётся командой create-medusa-app, см. ниже)
+├── backend/           # Medusa (create-medusa-app), env — см. раздел Backend ниже
 ├── docker-compose.yml # PostgreSQL для backend (опционально)
 └── README.md
 ```
@@ -29,7 +28,7 @@
 
 ### 1. Backend (Medusa + PostgreSQL)
 
-**Важно:** папка `backend` не должна существовать — её создаёт `create-medusa-app`. Если она уже есть (например, пустая или с старыми файлами), удалите её: `rm -rf backend`. Подробнее и пример `.env`: **backend-setup/README.md**.
+**Важно:** папка `backend` не должна существовать — её создаёт `create-medusa-app`. Если она уже есть (например, пустая или с старыми файлами), удалите её: `rm -rf backend`. Переменные для `backend/.env` — в этом README в разделе Backend.
 
 **Вариант A — с локальной PostgreSQL**
 
@@ -62,21 +61,42 @@ cd backend && npm run start
 - API: http://localhost:9000  
 - Admin Panel: http://localhost:9000/app  
 
-В `backend/.env` при необходимости задайте CORS (если не заданы, в конфиге подставятся значения по умолчанию для localhost). Для логина в админку без 401 на localhost в конфиг добавлены `cookieOptions` и `sessionOptions` для разработки. Если после входа GET `/admin/users/me` возвращает 401: (1) после любого изменения `medusa-config.ts` нужна пересборка: `npm run build`, затем `npm run start`; (2) очистите куки для localhost:9000 и войдите снова; (3) в запросе к `/admin/users/me` во вкладке Network проверьте, что в Request Headers есть `Cookie: connect.sid=...`. Пользователя админки создаёт `create-medusa-app`; нового: `npx medusa user -e email -p пароль` (оба флага `-e` и `-p` обязательны).
+В `backend/.env` задаётся в первую очередь `DATABASE_URL` (после `create-medusa-app`). При необходимости переопределите CORS и секреты; если переменные не заданы, в `medusa-config.ts` подставятся значения по умолчанию для localhost. Пример опциональных строк:
+
+```env
+STORE_CORS=http://localhost:3000
+ADMIN_CORS=http://localhost:9000
+AUTH_CORS=http://localhost:3000,http://localhost:9000
+REDIS_URL=redis://localhost:6379
+JWT_SECRET=supersecret
+COOKIE_SECRET=supersecret
+COOKIE_SECURE=false
+COOKIE_SAME_SITE=lax
+``` Для логина в админку без 401 на localhost в конфиг добавлены `cookieOptions` и `sessionOptions` для разработки. Если после входа GET `/admin/users/me` возвращает 401: (1) после любого изменения `medusa-config.ts` нужна пересборка: `npm run build`, затем `npm run start`; (2) очистите куки для localhost:9000 и войдите снова; (3) в запросе к `/admin/users/me` во вкладке Network проверьте, что в Request Headers есть `Cookie: connect.sid=...`. Пользователя админки создаёт `create-medusa-app`; нового: `npx medusa user -e email -p пароль` (оба флага `-e` и `-p` обязательны).
 
 ### 2. Frontend
 
 ```bash
 cd frontend
-cp .env.example .env
 npm install
+```
+
+Создайте `frontend/.env` (файл в репозиторий не коммитится):
+
+```env
+NEXT_PUBLIC_MEDUSA_BACKEND_URL=http://localhost:9000
+NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY=
+```
+
+Затем:
+
+```bash
 npm run dev
 ```
 
 Откройте http://localhost:3000  
 
-В `.env` указаны:
-- `NEXT_PUBLIC_MEDUSA_BACKEND_URL=http://localhost:9000` — запросы к Medusa проксируются через Next.js (`/api/store/*` → backend).
+- `NEXT_PUBLIC_MEDUSA_BACKEND_URL` — URL Medusa (по умолчанию локальный `9000`).
 - `NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY` — **нужен для каталога** (Store API без ключа не отдаёт товары). Как получить — ниже.
 
 ### Где взять Publishable API Key
@@ -100,6 +120,30 @@ NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY=вставьте_токен_из_консол
 
 - **shadcn/ui:** добавление компонентов: `npx shadcn@latest add button` (и др.) — конфиг в `components.json` уже настроен.
 - **Zustand:** новые сторы создавайте в `src/store/` по аналогии с `cart-store.ts`.
+
+## Тесты
+
+**Frontend** (Vitest, jsdom):
+
+```bash
+cd frontend && npm test
+```
+
+Файлы: `src/**/*.test.ts(x)` (например `src/lib/utils.test.ts`, `src/store/cart-store.test.ts`).
+
+**Backend** (Jest):
+
+```bash
+cd backend && npm run test:unit
+```
+
+Unit-спеки: `src/**/__tests__/**/*.unit.spec.ts`.
+
+**Интеграция HTTP** (поднимает Medusa и временную БД — нужен доступный PostgreSQL и `DATABASE_URL` в `.env`):
+
+```bash
+cd backend && npm run test:integration:http
+```
 
 ## Лицензия
 
